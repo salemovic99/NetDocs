@@ -72,9 +72,7 @@ async def logout(
 
 @router.get("/me", response_model=UserProfile)
 async def me(user: CurrentUser) -> UserProfile:
-    profile = UserProfile.model_validate(user)
-    profile.roles = [r.name for r in user.roles]
-    return profile
+    return UserProfile.model_validate(user)
 
 
 @router.get("/me/permissions", response_model=EffectivePermissions)

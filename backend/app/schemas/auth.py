@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.core.config import settings
 from app.schemas.common import ORMModel
@@ -39,6 +39,14 @@ class UserProfile(ORMModel):
     must_change_password: bool
     last_login_at: datetime | None
     roles: list[str] = []
+
+    @field_validator("roles", mode="before")
+    @classmethod
+    def _roles_to_names(cls, v: object) -> object:
+        # Accept either a list of Role ORM objects or already-flattened names.
+        if isinstance(v, (list, tuple, set)):
+            return [getattr(r, "name", r) for r in v]
+        return v
 
 
 class EffectivePermissions(BaseModel):
