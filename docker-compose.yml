@@ -1,0 +1,103 @@
+# NetDocs — full self-hosted stack (PRD §8).
+# Default `docker compose up` starts: db, redis, clamav, api, worker.
+# The frontend is behind the `frontend` profile until a frontend/Dockerfile exists:
+#   docker compose --profile frontend up --build
+
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql+asyncpg://netdocs:netdocs@db:5432/netdocs
+  REDIS_URL: redis://redis:6379/0
+  JWT_ALGORITHM: HS256
+  JWT_SECRET: change-me-in-production-please-use-a-long-random-value
+  JWT_KID: dev-1
+  CORS_ORIGINS: http://localhost:3000
+  UPLOAD_DIR: /data/attachments
+  ATTACHMENT_REQUIRE_CLEAN: "true"
+  CLAMAV_ENABLED: "true"
+  CLAMAV_HOST: clamav
+  CLAMAV_PORT: "3310"
+  RATE_LIMIT_ENABLED: "true"
+  SECURITY_HEADERS_ENABLED: "true"
+  ENVIRONMENT: dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: netdocs
+      POSTGRES_PASSWORD: netdocs
+      POSTGRES_DB: netdocs
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U netdocs"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  clamav:
+    image: clamav/clamav:latest
+    healthcheck:
+      test: ["CMD", "clamdcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  api:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *backend-env
+      BOOTSTRAP_ADMIN_EMAIL: admin@example.com
+      BOOTSTRAP_ADMIN_USERNAME: admin
+      BOOTSTRAP_ADMIN_PASSWORD: ChangeMe123!456
+    volumes:
+      - attachments:/data/attachments
+    ports:
+      - "8000:8000"
+
+  worker:
+    build: ./backend
+    # Override the API entrypoint (migrations + uvicorn); the worker just runs the loop.
+    entrypoint: ["python", "-m", "app.worker.main"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: *backend-env
+    volumes:
+      - attachments:/data/attachments
+
+  frontend:
+    profiles: ["frontend"]
+    build: ./frontend
+    depends_on:
+      - api
+    environment:
+      # Server-only: the Next BFF reaches the API over the compose network.
+      API_INTERNAL_URL: http://api:8000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+  attachments:
