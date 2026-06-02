@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Network } from "lucide-react";
 
 import { LoginForm } from "./_components/login-form";
@@ -46,7 +47,9 @@ export default function LoginPage() {
               Enter your credentials to access the console.
             </p>
           </div>
-          <LoginForm />
+          <Suspense fallback={null}>
+            <LoginForm />
+          </Suspense>
         </div>
       </div>
     </div>
