@@ -108,7 +108,17 @@ async def _periodic_maintenance(redis: Redis) -> None:
 
 async def run() -> None:
     configure_logging()
-    redis = Redis.from_url(settings.redis_url, decode_responses=True)
+    redis = Redis.from_url(
+        settings.redis_url,
+        decode_responses=True,
+        # redis-py 8.0 defaults socket_timeout to 5s, which races the 5s BRPOP
+        # blocking timeout below and raises spurious TimeoutErrors on an idle
+        # queue. Disable the per-read timeout and rely on health checks to
+        # detect a genuinely dead connection instead.
+        socket_timeout=None,
+        health_check_interval=30,
+        socket_keepalive=True,
+    )
     logger.info("worker started; consuming %s", AV_SCAN_QUEUE)
     asyncio.create_task(_periodic_maintenance(redis))
     while True:
