@@ -2,7 +2,16 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import CITEXT
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -53,11 +62,11 @@ class User(UUIDPkMixin, TimestampMixin, Base):
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     failed_login_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    locked_until: Mapped[datetime | None] = mapped_column()
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     must_change_password: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False
     )
-    last_login_at: Mapped[datetime | None] = mapped_column()
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     roles: Mapped[list["Role"]] = relationship(
         secondary=user_roles, back_populates="users", lazy="selectin"
