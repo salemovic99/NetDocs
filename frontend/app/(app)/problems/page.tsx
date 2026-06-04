@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
-import { ProblemsList } from "./_components/problems-list";
+import { ProblemsByCategory } from "./_components/problems-by-category";
 
 export const metadata: Metadata = { title: "Problems — NetDocs" };
 
@@ -22,7 +22,7 @@ export default function ProblemsPage() {
           </Button>
         }
       />
-      <ProblemsList />
+      <ProblemsByCategory />
     </div>
   );
 }

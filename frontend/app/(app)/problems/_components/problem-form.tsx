@@ -3,9 +3,10 @@ import { formResolver } from "@/lib/schemas";
 
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { FileText, Link2, Stethoscope, Tags } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -95,7 +96,16 @@ export function ProblemForm({
       >
         <div className="space-y-6 lg:col-span-2">
           <Card>
-            <CardContent className="space-y-4 pt-6">
+            <CardHeader className="flex-row items-center gap-3 border-b border-border/60">
+              <FileText className="size-5 text-primary" />
+              <div className="space-y-0.5">
+                <CardTitle className="text-h3">Overview</CardTitle>
+                <p className="text-body-sm text-on-surface-variant">
+                  A short, searchable summary of the problem.
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
               <FormField
                 control={form.control}
                 name="title"
@@ -109,6 +119,20 @@ export function ProblemForm({
                   </FormItem>
                 )}
               />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex-row items-center gap-3 border-b border-border/60">
+              <Stethoscope className="size-5 text-primary" />
+              <div className="space-y-0.5">
+                <CardTitle className="text-h3">Diagnosis</CardTitle>
+                <p className="text-body-sm text-on-surface-variant">
+                  What was observed, why it happened, and how it was fixed.
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
               {(
                 [
                   ["symptoms", "Symptoms"],
@@ -141,7 +165,11 @@ export function ProblemForm({
 
         <div className="space-y-6">
           <Card>
-            <CardContent className="space-y-4 pt-6">
+            <CardHeader className="flex-row items-center gap-3 border-b border-border/60">
+              <Tags className="size-5 text-primary" />
+              <CardTitle className="text-h3">Classification</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
               <FormField
                 control={form.control}
                 name="severity"
@@ -226,6 +254,15 @@ export function ProblemForm({
                   </FormItem>
                 )}
               />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex-row items-center gap-3 border-b border-border/60">
+              <Link2 className="size-5 text-primary" />
+              <CardTitle className="text-h3">Links</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
               <FormField
                 control={form.control}
                 name="tag_ids"
@@ -282,7 +319,7 @@ export function ProblemForm({
             </CardContent>
           </Card>
 
-          <div className="flex gap-2">
+          <div className="sticky bottom-4 flex gap-2 rounded-lg border border-border bg-card/80 p-3 shadow-sm backdrop-blur">
             <Button
               type="submit"
               className="flex-1"
